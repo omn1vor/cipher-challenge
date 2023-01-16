@@ -17,6 +17,8 @@ public class Operand {
 
     @Override
     public String toString() {
-        return digits.stream().collect(Collectors.joining());
+        return digits.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining());
     }
 }

@@ -3,18 +3,18 @@ package org.example;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Cipher {
-    private final String expr;
+public class Decoder {
     private final Deque<Operand> operands = new ArrayDeque<>();
     private final Deque<Character> operators = new ArrayDeque<>();
+    private final String expr;
 
-    public Cipher(String expr) {
-        this.expr = expr;
+    public Decoder(String expr) {
+        this.expr = expr.toLowerCase();
         checkExpression();
         parse();
     }
 
-    public String encode() {
+    public String encodeOld() {
         Map<Character, Character> map = new HashMap<>();
         Random rnd = new Random();
         Set<Character> numbers = operands.stream()
@@ -70,8 +70,9 @@ public class Cipher {
     }
 
     private void checkExpression() {
-        if (!expr.matches("\\d+(?:\\s*[+\\-]\\s*\\d+)*\\s*=\\s*\\d+")) {
-            throw new IllegalArgumentException("Expecting expression like this one: '321-111=210'");
+        if (!expr.matches("[a-z]+(?:\\s*[+\\-]\\s*[a-z]+)*\\s*=\\s*[a-z]+")) {
+            throw new IllegalArgumentException("Expecting expression with addition and/or subtraction, " +
+                    "like this one: 'sln-nnn=lnf'");
         }
     }
 }
