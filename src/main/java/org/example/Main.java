@@ -7,7 +7,8 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Decoder decoder = new Decoder("xwc-ccc=wcm");
+        System.out.println("Expression: 'hff+hff=pf+pf+pf+hpf'");
+        Decoder decoder = new Decoder("hff+hff=pf+pf+pf+hpf");
         decoder.decode();
 
 //        Encoder encoder = new Encoder();

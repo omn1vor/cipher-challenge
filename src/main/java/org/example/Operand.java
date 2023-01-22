@@ -2,11 +2,32 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Operand {
     long value;
     List<Character> digits = new ArrayList<>();
+
+    public Character getLastDigit(int offset) {
+        int index = digits.size() - 1 - offset;
+        if (index < 0) {
+            return null;
+        }
+        return digits.get(index);
+    }
+
+    public long getValueWithOffset(int offset, Map<Character, Integer> map) {
+        long result = 0;
+        for (int i = 0; i <= offset; i++) {
+            Character character = getLastDigit(i);
+            if (character == null) {
+                continue;
+            }
+            result += map.get(character) * (long) Math.pow(10, i);
+        }
+        return result;
+    }
 
     @Override
     public String toString() {
