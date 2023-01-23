@@ -17,7 +17,7 @@ public class Operand {
         return digits.get(index);
     }
 
-    public long getValueWithOffset(int offset, Map<Character, Integer> map) {
+    public long getValue(Map<Character, Integer> map, int offset) {
         long result = 0;
         for (int i = 0; i <= offset; i++) {
             Character character = getLastDigit(i);

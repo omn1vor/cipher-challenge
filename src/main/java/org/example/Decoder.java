@@ -3,17 +3,12 @@ package org.example;
 import java.util.*;
 
 public class Decoder {
-    private final Deque<Operand> operands = new ArrayDeque<>();
-    private final Deque<Character> operators = new ArrayDeque<>();
-    private final String expr;
-    private int maxDigits;
+    private final Equality equality;
     private final List<Map<Character, Character>> maps = new ArrayList<>();
     private final Set<Character> nonZeroes = new HashSet<>();
 
-    public Decoder(String expr) {
-        this.expr = expr.toLowerCase();
-        checkExpression();
-        parse();
+    public Decoder(String equity) {
+        this.equality = new Equality(equity);
         markFirstDigitsAsNonZeroes();
     }
 
@@ -23,13 +18,13 @@ public class Decoder {
     }
 
     private void markFirstDigitsAsNonZeroes() {
-        for (Operand operand : operands) {
+        for (Operand operand : equality.getOperands()) {
             nonZeroes.add(operand.digits.get(0));
         }
     }
 
     private void getWorkingCombinations(int offset, Map<Character, Integer> currentMap) {
-        List<Character> symbols = operands.stream()
+        List<Character> symbols = equality.getOperands().stream()
                 .map(operand -> operand.getLastDigit(offset))
                 .filter(character -> character != null && !currentMap.containsKey(character))
                 .distinct()
@@ -37,7 +32,7 @@ public class Decoder {
         List<Map<Character, Integer>> maps = generateCombinations(0, new int[symbols.size()], symbols,
                 currentMap, offset);
         for (var map : maps) {
-            if (offset >= maxDigits - 1) {
+            if (offset >= equality.maxDigits - 1) {
                 System.out.println(printWithMapping(map));
             } else {
                 getWorkingCombinations(offset + 1, map);
@@ -53,7 +48,7 @@ public class Decoder {
         if (index == combination.length) {
             Map<Character, Integer> map = getMap(symbols, combination);
             map.putAll(knownMap);
-            if (mapIsPossible(map, offset)) {
+            if (equality.check(map, offset)) {
                 maps.add(map);
             }
             return maps;
@@ -90,57 +85,9 @@ public class Decoder {
         return map;
     }
 
-    private boolean mapIsPossible(Map<Character, Integer> map, int offset) {
-        Deque<Operand> localOperands = new ArrayDeque<>(operands);
-        Deque<Character> localOperators = new ArrayDeque<>(operators);
-        long leftResult = 0;
-        long rightResult = 0;
-        while (!localOperators.isEmpty()) {
-            char operator = localOperators.pop();
-            if (operator == '=') {
-                Operand rightOperand = localOperands.pop();
-                rightResult = rightOperand.getValueWithOffset(offset, map);
-                continue;
-            }
-            Operand rightOperand = localOperands.pop();
-            long rightValue = rightOperand.getValueWithOffset(offset, map);
-            Operand leftOperand = localOperands.pop();
-            long leftValue = leftOperand.getValueWithOffset(offset, map);
-            int sign = operator == '+' ? 1 : -1;
-            leftResult = leftResult + leftValue + sign * rightValue;
-        }
-        long powerOf10 = (long) Math.pow(10, offset + 1);
-        boolean fullExpression = offset + 1 == maxDigits;
-        return leftResult % powerOf10 == rightResult % powerOf10
-                || !fullExpression && powerOf10 + leftResult % powerOf10 == rightResult % powerOf10;
-    }
-
-    private void parse() {
-        for (int i = 0; i < expr.length(); i++) {
-            char c = expr.charAt(i);
-            if (c == ' ') {
-                continue;
-            }
-            if (Character.isLetter(c)) {
-                Operand operand = new Operand();
-                while (i < expr.length() && Character.isLetter(expr.charAt(i))) {
-                    operand.digits.add(expr.charAt(i));
-                    i++;
-                }
-                i--;
-                if (operand.digits.size() > maxDigits) {
-                    maxDigits = operand.digits.size();
-                }
-                operands.push(operand);
-            } else {
-                operators.push(c);
-            }
-        }
-    }
-
     private String printWithMapping(Map<Character, Integer> map) {
         StringBuilder sb = new StringBuilder();
-        for (char c : expr.toCharArray()) {
+        for (char c : equality.rawString.toCharArray()) {
             if (Character.isLetter(c)) {
                 sb.append(Character.forDigit(map.get(c), 10));
             } else {
@@ -150,10 +97,5 @@ public class Decoder {
         return sb.toString();
     }
 
-    private void checkExpression() {
-        if (!expr.matches("[a-z]+(?:\\s*[+\\-]\\s*[a-z]+)*\\s*=\\s*[a-z]+(?:\\s*[+\\-]\\s*[a-z]+)*")) {
-            throw new IllegalArgumentException("Expecting expression with addition and/or subtraction, " +
-                    "like this one: 'sln-nnn=lnf'");
-        }
-    }
+
 }
