@@ -39,7 +39,7 @@ public class Encoder {
     }
 
     private void checkExpression(String expr) {
-        if (!expr.matches("\\d+(?:\\s*[+\\-]\\s*\\d+)*\\s*=\\s*\\d+")) {
+        if (!expr.matches("\\d+(?:\\s*[+\\-]\\s*\\d+)*\\s*=\\s*\\d+(?:\\s*[+\\-]\\s*\\d+)*")) {
             throw new IllegalArgumentException("Expecting expression with addition and/or subtraction, " +
                     "like this one: '321-111=210'");
         }

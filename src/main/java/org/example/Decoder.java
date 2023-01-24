@@ -1,30 +1,66 @@
 package org.example;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Decoder {
-    private final Equality equality;
-    private final List<Map<Character, Character>> maps = new ArrayList<>();
+    private final List<Equality> equalities = new ArrayList<>();
     private final Set<Character> nonZeroes = new HashSet<>();
+    private int maxDigits;
+    private final List<Map<Character, Integer>> workingMaps = new ArrayList<>();
 
-    public Decoder(String equity) {
-        this.equality = new Equality(equity);
-        markFirstDigitsAsNonZeroes();
+    public Decoder() {
+
     }
 
-    public void decode() {
-        Map<Character, Integer> map = new HashMap<>();
-        getWorkingCombinations(0, map);
+    public Decoder(String equality) {
+        addEquality(equality);
+    }
+
+    public void addEquality(String equality) {
+        equalities.add(new Equality(equality));
+    }
+
+    public String decode() {
+        calculateMaxDigits();
+        markFirstDigitsAsNonZeroes();
+        Map<Character, Integer> knownMap = new HashMap<>();
+        getWorkingCombinations(0, knownMap);
+        return printMappedEqualities();
+    }
+
+    private String printMappedEqualities() {
+        StringBuilder sb = new StringBuilder();
+        for (Equality equality : equalities) {
+            sb.append(String.format("%s:", equality));
+            sb.append(System.lineSeparator());
+            String mappings = workingMaps.stream()
+                    .map(equality::printWithMapping)
+                    .collect(Collectors.joining("; "));
+            sb.append(mappings);
+            sb.append(System.lineSeparator());
+        }
+        return sb.toString();
     }
 
     private void markFirstDigitsAsNonZeroes() {
-        for (Operand operand : equality.getOperands()) {
-            nonZeroes.add(operand.digits.get(0));
+        for (Equality equality : equalities) {
+            for (Operand operand : equality.getOperands()) {
+                nonZeroes.add(operand.digits.get(0));
+            }
         }
     }
 
+    private void calculateMaxDigits() {
+        maxDigits = equalities.stream()
+                .mapToInt(Equality::getMaxDigits)
+                .max()
+                .orElse(0);
+    }
+
     private void getWorkingCombinations(int offset, Map<Character, Integer> currentMap) {
-        List<Character> symbols = equality.getOperands().stream()
+        List<Character> symbols = equalities.stream()
+                .flatMap(equality -> equality.getOperands().stream())
                 .map(operand -> operand.getLastDigit(offset))
                 .filter(character -> character != null && !currentMap.containsKey(character))
                 .distinct()
@@ -32,8 +68,8 @@ public class Decoder {
         List<Map<Character, Integer>> maps = generateCombinations(0, new int[symbols.size()], symbols,
                 currentMap, offset);
         for (var map : maps) {
-            if (offset >= equality.maxDigits - 1) {
-                System.out.println(printWithMapping(map));
+            if (offset >= maxDigits - 1) {
+                workingMaps.add(map);
             } else {
                 getWorkingCombinations(offset + 1, map);
             }
@@ -48,7 +84,9 @@ public class Decoder {
         if (index == combination.length) {
             Map<Character, Integer> map = getMap(symbols, combination);
             map.putAll(knownMap);
-            if (equality.check(map, offset)) {
+            boolean combinationWorks = equalities.stream()
+                    .allMatch(equality -> equality.check(map, offset));
+            if (combinationWorks) {
                 maps.add(map);
             }
             return maps;
@@ -84,18 +122,4 @@ public class Decoder {
         }
         return map;
     }
-
-    private String printWithMapping(Map<Character, Integer> map) {
-        StringBuilder sb = new StringBuilder();
-        for (char c : equality.rawString.toCharArray()) {
-            if (Character.isLetter(c)) {
-                sb.append(Character.forDigit(map.get(c), 10));
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-
 }

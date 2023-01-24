@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Operand {
-    long value;
+class Operand {
     List<Character> digits = new ArrayList<>();
 
-    public Character getLastDigit(int offset) {
+    Character getLastDigit(int offset) {
         int index = digits.size() - 1 - offset;
         if (index < 0) {
             return null;
@@ -17,7 +16,7 @@ public class Operand {
         return digits.get(index);
     }
 
-    public long getValue(Map<Character, Integer> map, int offset) {
+    long getValue(Map<Character, Integer> map, int offset) {
         long result = 0;
         for (int i = 0; i <= offset; i++) {
             Character character = getLastDigit(i);

@@ -4,13 +4,13 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 
-public class Expression {
+class Expression {
     private final String rawString;
     final Deque<Operand> operands = new ArrayDeque<>();
     final Deque<Character> operators = new ArrayDeque<>();
     int maxDigits;
 
-    public Expression(String rawString) {
+    Expression(String rawString) {
         this.rawString = rawString;
         parse();
     }

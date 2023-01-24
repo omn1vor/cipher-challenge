@@ -4,16 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Equality {
-    final String rawString;
-    Expression left;
-    Expression right;
-    int maxDigits;
+class Equality {
+    private final String rawString;
+    private Expression left;
+    private Expression right;
+    private int maxDigits;
 
-    public Equality(String rawString) {
+    Equality(String rawString) {
         this.rawString = rawString.toLowerCase();
         checkFormat();
         parse();
+    }
+
+    int getMaxDigits() {
+        return maxDigits;
     }
 
     List<Operand> getOperands() {
@@ -34,6 +38,18 @@ public class Equality {
                 || !maxDigitCheck && leftResult % powerOf10 == powerOf10 + rightResult % powerOf10;
     }
 
+    String printWithMapping(Map<Character, Integer> map) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : rawString.toCharArray()) {
+            if (Character.isLetter(c)) {
+                sb.append(Character.forDigit(map.get(c), 10));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private void parse() {
         String[] sides = rawString.split("=");
         left = new Expression(sides[0]);
@@ -46,5 +62,10 @@ public class Equality {
             throw new IllegalArgumentException("Expecting equity with addition and/or subtraction, " +
                     "like this one: 'sln-nnn=lnf'");
         }
+    }
+
+    @Override
+    public String toString() {
+        return rawString;
     }
 }
