@@ -29,7 +29,7 @@ class Expression {
             result += value;
         }
         
-        if(!operands.isEmpty()) {
+        if (!operands.isEmpty()) {
             Operand operand = localOperands.pop();
             result += operand.getValue(map, offset);
         }

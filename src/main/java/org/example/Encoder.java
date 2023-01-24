@@ -9,21 +9,17 @@ public class Encoder {
         initializeMap();
     }
 
-    public String encode(String expr) {
-        checkExpression(expr);
+    public String encode(String rawString) {
+        checkExpression(rawString);
 
         StringBuilder sb = new StringBuilder();
-        for (char c : expr.toCharArray()) {
+        for (char c : rawString.toCharArray()) {
             sb.append(Character.isDigit(c) ? map.get(c) : c);
         }
         return sb.toString();
     }
 
-    public void shuffle() {
-        initializeMap();
-    }
-
-    private void initializeMap() {
+     private void initializeMap() {
         Random rnd = new Random();
         List<Character> letters = new ArrayList<>('z' - 'a' + 1);
         for (char c = 'a'; c <= 'z'; c++) {
@@ -38,10 +34,11 @@ public class Encoder {
         }
     }
 
-    private void checkExpression(String expr) {
-        if (!expr.matches("\\d+(?:\\s*[+\\-]\\s*\\d+)*\\s*=\\s*\\d+(?:\\s*[+\\-]\\s*\\d+)*")) {
-            throw new IllegalArgumentException("Expecting expression with addition and/or subtraction, " +
-                    "like this one: '321-111=210'");
+    private void checkExpression(String rawString) {
+        if (!rawString.matches("\\d+(?:\\s*[+\\-]\\s*\\d+)*\\s*=\\s*\\d+(?:\\s*[+\\-]\\s*\\d+)*")) {
+            String message = String.format("Wrong input format: %s.%nExpecting an equality with addition " +
+                    "and/or subtraction, like this one: '321-111=210'", rawString);
+            throw new IllegalArgumentException(message);
         }
     }
 }
