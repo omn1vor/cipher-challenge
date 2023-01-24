@@ -59,8 +59,9 @@ class Equality {
 
     private void checkFormat() {
         if (!rawString.matches("[a-z]+(?:\\s*[+\\-]\\s*[a-z]+)*\\s*=\\s*[a-z]+(?:\\s*[+\\-]\\s*[a-z]+)*")) {
-            throw new IllegalArgumentException("Expecting equity with addition and/or subtraction, " +
-                    "like this one: 'sln-nnn=lnf'");
+            String message = String.format("Wrong input format: %s. %nExpecting an equality with addition " +
+                    "and/or subtraction, like this one: 'sln-nnn=lnf'", rawString);
+            throw new IllegalArgumentException(message);
         }
     }
 

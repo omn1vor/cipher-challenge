@@ -9,19 +9,22 @@ public class Decoder {
     private int maxDigits;
     private final List<Map<Character, Integer>> workingMaps = new ArrayList<>();
 
-    public Decoder() {
-
-    }
-
-    public Decoder(String equality) {
-        addEquality(equality);
-    }
-
     public void addEquality(String equality) {
         equalities.add(new Equality(equality));
     }
 
+    /**
+     * The algorithm is a naive recombination with two limiting conditions:
+     * - numbers cannot start with 0
+     * - algorithm takes last digits of equality members, each iteration a digit more, in hope of limiting the number
+     *      of unknown digits. Only those combinations that work for the previous iteration go to the next one.
+     * The worst-case scenario is having all the possible digits as the last digits of equality members.
+     * @return String containing all the equalities and all possible decoded combinations of digits for them
+     */
     public String decode() {
+        if (equalities.isEmpty()) {
+            return "";
+        }
         calculateMaxDigits();
         markFirstDigitsAsNonZeroes();
         Map<Character, Integer> knownMap = new HashMap<>();
@@ -29,19 +32,6 @@ public class Decoder {
         return printMappedEqualities();
     }
 
-    private String printMappedEqualities() {
-        StringBuilder sb = new StringBuilder();
-        for (Equality equality : equalities) {
-            sb.append(String.format("%s:", equality));
-            sb.append(System.lineSeparator());
-            String mappings = workingMaps.stream()
-                    .map(equality::printWithMapping)
-                    .collect(Collectors.joining("; "));
-            sb.append(mappings);
-            sb.append(System.lineSeparator());
-        }
-        return sb.toString();
-    }
 
     private void markFirstDigitsAsNonZeroes() {
         for (Equality equality : equalities) {
@@ -59,14 +49,15 @@ public class Decoder {
     }
 
     private void getWorkingCombinations(int offset, Map<Character, Integer> currentMap) {
-        List<Character> symbols = equalities.stream()
+        Map<Character, Integer> unknownMap = new LinkedHashMap<>();
+        equalities.stream()
                 .flatMap(equality -> equality.getOperands().stream())
                 .map(operand -> operand.getLastDigit(offset))
                 .filter(character -> character != null && !currentMap.containsKey(character))
                 .distinct()
-                .toList();
-        List<Map<Character, Integer>> maps = generateCombinations(0, new int[symbols.size()], symbols,
-                currentMap, offset);
+                .forEach(character -> unknownMap.put(character, null));
+
+        List<Map<Character, Integer>> maps = generatePossibleMaps(unknownMap, currentMap, offset);
         for (var map : maps) {
             if (offset >= maxDigits - 1) {
                 workingMaps.add(map);
@@ -76,50 +67,54 @@ public class Decoder {
         }
     }
 
-    private List<Map<Character, Integer>> generateCombinations(int index, int[] combination, List<Character> symbols,
-                                      Map<Character, Integer> knownMap, int offset) {
+    private List<Map<Character, Integer>> generatePossibleMaps(Map<Character, Integer> unknownMap,
+                                                               Map<Character, Integer> knownMap, int offset) {
 
-        List<Map<Character, Integer>> maps = new ArrayList<>();
+        List<Map<Character, Integer>> discoveredMaps = new ArrayList<>();
 
-        if (index == combination.length) {
-            Map<Character, Integer> map = getMap(symbols, combination);
-            map.putAll(knownMap);
+        Optional<Character> nextUnknownLetter = unknownMap.keySet().stream()
+                .filter(letter -> unknownMap.get(letter) == null)
+                .findFirst();
+
+        if (nextUnknownLetter.isEmpty()) {
+            Map<Character, Integer> candidateMap = new HashMap<>(unknownMap);
+            candidateMap.putAll(knownMap);
             boolean combinationWorks = equalities.stream()
-                    .allMatch(equality -> equality.check(map, offset));
+                    .allMatch(equality -> equality.check(candidateMap, offset));
             if (combinationWorks) {
-                maps.add(map);
+                discoveredMaps.add(candidateMap);
             }
-            return maps;
+            return discoveredMaps;
         }
+
+        Character currentLetter = nextUnknownLetter.get();
 
         for (int digit = 0; digit <= 9; digit++) {
-            if (digit == 0 && nonZeroes.contains(symbols.get(index))) {
+            if (digit == 0 && nonZeroes.contains(currentLetter)) {
                 continue;
             }
-            boolean unique = !knownMap.containsValue(digit);
-            if (unique) {
-                for (int i = 0; i < index; i++) {
-                    if (combination[i] == digit) {
-                        unique = false;
-                        break;
-                    }
-                }
-            }
-            if (!unique) {
+            if (knownMap.containsValue(digit)
+                    || unknownMap.containsValue(digit)) {
                 continue;
             }
-            combination[index] = digit;
-            maps.addAll(generateCombinations(index + 1, combination, symbols, knownMap, offset));
+            unknownMap.put(currentLetter, digit);
+            discoveredMaps.addAll(generatePossibleMaps(new LinkedHashMap<>(unknownMap), knownMap, offset));
         }
 
-        return maps;
+        return discoveredMaps;
     }
 
-    private Map<Character, Integer> getMap(List<Character> symbols, int[] values) {
-        Map<Character, Integer> map = new HashMap<>();
-        for (int i = 0; i < symbols.size(); i++) {
-            map.put(symbols.get(i), values[i]);
+    private String printMappedEqualities() {
+        StringBuilder sb = new StringBuilder();
+        for (Equality equality : equalities) {
+            sb.append(String.format("%s:", equality));
+            sb.append(System.lineSeparator());
+            String mappings = workingMaps.stream()
+                    .map(equality::printWithMapping)
+                    .collect(Collectors.joining("; "));
+            sb.append(mappings);
+            sb.append(System.lineSeparator());
         }
-        return map;
+        return sb.toString();
     }
 }
