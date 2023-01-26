@@ -57,7 +57,7 @@ class EncoderTest {
     }
 
     @Test
-    @DisplayName("Malformed equities should throw IllegalArgumentException")
+    @DisplayName("Malformed equalities should throw IllegalArgumentException")
     void testMalformedEquality() {
         assertThrows(IllegalArgumentException.class, () -> encoder.encode("12/21=33"));
     }
