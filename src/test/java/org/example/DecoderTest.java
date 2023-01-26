@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DecoderTest {
 
@@ -50,5 +50,12 @@ class DecoderTest {
                 "xwc = wcm + ccc:" + System.lineSeparator() +
                 "321 = 210 + 111; 642 = 420 + 222; 963 = 630 + 333; 926 = 260 + 666" + System.lineSeparator();
         assertEquals(expected, decoder.decode());
+    }
+
+    @Test
+    @DisplayName("There should be no false positives due to overflow, like 8118+3808=1926")
+    void checkOverflow() {
+        decoder.addEquality("wbbw + ewcw = bsxq");
+        assertFalse(decoder.decode().contains("8118 + 3808 = 1926"));
     }
 }

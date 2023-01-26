@@ -33,9 +33,16 @@ class Equality {
         long powerOf10 = (long) Math.pow(10, offset + 1);
         boolean maxDigitCheck = offset + 1 == maxDigits;
 
-        return leftResult % powerOf10 == rightResult % powerOf10
-                || !maxDigitCheck && powerOf10 + leftResult % powerOf10 == rightResult % powerOf10
-                || !maxDigitCheck && leftResult % powerOf10 == powerOf10 + rightResult % powerOf10;
+        if (maxDigitCheck) {
+            return leftResult == rightResult;
+        }
+
+        leftResult = leftResult %powerOf10;
+        rightResult = rightResult % powerOf10;
+
+        return leftResult == rightResult
+                || powerOf10 + leftResult == rightResult
+                || leftResult == powerOf10 + rightResult;
     }
 
     String printWithMapping(Map<Character, Integer> map) {
