@@ -37,7 +37,7 @@ class Equality {
             return leftResult == rightResult;
         }
 
-        leftResult = leftResult %powerOf10;
+        leftResult = leftResult % powerOf10;
         rightResult = rightResult % powerOf10;
 
         return leftResult == rightResult
