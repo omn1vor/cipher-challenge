@@ -14,7 +14,7 @@ public class Decoder {
     }
 
     /**
-     * The algorithm is a naive recombination with two limiting conditions:
+     * The algorithm is a naive search through all possible combinations with two limiting conditions:
      * - numbers cannot start with 0
      * - algorithm takes last digits of equality members, each iteration a digit more, in hope of limiting the number
      *      of unknown digits. Only those combinations that work for the previous iteration go to the next one.
